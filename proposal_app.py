@@ -10,8 +10,15 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
 from reportlab.lib.pagesizes import letter
 
-# Connect to the SQLite database
+# Connect to the SQLite database and create the table if it doesn't exist
 conn = sqlite3.connect('proposal.db')
+c = conn.cursor()
+c.execute('''CREATE TABLE IF NOT EXISTS proposals
+             (proposal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+              client_name TEXT,
+              proposal_date TEXT,
+              proposal_status TEXT)''')
+conn.commit()
 
 # Define a function to insert a new proposal into the database
 def insert_proposal(client_name, proposal_date, proposal_status):
@@ -49,7 +56,6 @@ def generate_proposal(proposal_id):
 # Define the Streamlit app
 def app():
     st.title("Proposal Generator")
-    c = conn.cursor()
     # Define the form inputs
     client_name = st.text_input("Client Name")
     proposal_date = st.date_input("Proposal Date")
