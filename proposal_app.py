@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Apr 11 12:47:19 2023
+
+@author: amrit
+"""
 import streamlit as st
 import sqlite3
 from reportlab.pdfgen import canvas
@@ -7,7 +13,7 @@ from PIL import Image
 from io import BytesIO
 
 # Connect to the SQLite database
-conn = sqlite3.connect('proposals2.db')
+conn = sqlite3.connect('proposals.db')
 
 # Define a function to create the proposals table if it does not exist
 def create_table():
@@ -42,6 +48,8 @@ def generate_proposal(proposal_id):
     # Set up the PDF canvas
     pdf_file = "proposal_" + str(proposal_id) + ".pdf"
     c = canvas.Canvas(pdf_file, pagesize=letter)
+
+    # Add the proposal details to the PDF
     c.setFont("Helvetica-Bold", 14)
     c.drawString(1 * inch, 10 * inch, "Proposal for " + result[1])
     c.setFont("Helvetica", 12)
@@ -52,25 +60,20 @@ def generate_proposal(proposal_id):
     # Add the image to the PDF
     if result[4]:
         try:
-            # Check the image data
-            print("Image data before opening the image:", result[4])
-            image = Image.open(BytesIO(result[4]))
-            print("Image data after opening the image:", image)
+            image_data = BytesIO(result[4])
+            image = Image.open(image_data)
             image_width, image_height = image.size
-            if image_width > image_height:
-                image_width = 4.5 * inch
-                image_height = 2.53 * inch
-            else:
-                image_height = 4.5 * inch
-                image_width = 2.53 * inch
             c.drawImage(image, 1 * inch, 6 * inch, width=image_width, height=image_height)
-        except:
-            pass
+        except Exception as e:
+            print("Error adding image to PDF:", str(e))
 
+    # Save the PDF
     c.showPage()
     c.save()
 
-    st.success("Proposal generated successfully!")
+    return "PDF generated successfully."
+
+
 
 # Define the Streamlit app
 def app():
